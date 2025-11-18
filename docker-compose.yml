@@ -1,4 +1,4 @@
-name: medusa_test
+name: medusa_ecommerce_test
 
 services:
   # PostgreSQL Database
