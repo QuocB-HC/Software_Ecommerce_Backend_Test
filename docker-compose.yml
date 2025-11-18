@@ -1,0 +1,57 @@
+name: medusa_test
+
+services:
+  # PostgreSQL Database
+  postgres:
+    image: postgres:15-alpine
+    container_name: medusa_postgres_test
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: medusa_store_test
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data_test:/var/lib/postgresql/data
+    networks:
+      - medusa_network_test
+
+  # Redis
+  redis:
+    image: redis:7-alpine
+    container_name: medusa_redis_test
+    restart: unless-stopped
+    ports:
+      - "6380:6379"
+    networks:
+      - medusa_network_test
+
+  # Medusa Backend
+  medusa:
+    build: .
+    container_name: medusa_backend_test
+    restart: unless-stopped
+    depends_on:
+      - postgres
+      - redis
+    ports:
+      - "7000:7000"
+    environment:
+      - NODE_ENV=development
+      - DATABASE_URL=postgres://postgres:postgres@postgres:5432/medusa_store_test
+      - REDIS_URL=redis://redis:6379
+    env_file:
+      - .env
+    volumes:
+      - .:/app
+      - /app/node_modules
+    networks:
+      - medusa_network_test
+
+volumes:
+  postgres_data_test:
+
+networks:
+  medusa_network_test:
+    driver: bridge
